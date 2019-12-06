@@ -32,6 +32,12 @@ func TestNewProduct(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:    "WrongId",
+			args:    args{name: "тряпка", description: "обычная тряпка", id: -10},
+			want:    nil,
+			wantErr: true,
+		},
+		{
 			name:    "GoodCase",
 			args:    args{name: "тряпка", description: "обычная тряпка", price: 1000},
 			want:    &Product{name: "тряпка", description: "обычная тряпка", price: 1000},
