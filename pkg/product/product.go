@@ -12,7 +12,7 @@ var ErrWrongText = errors.New("text is wrong")
 
 // Product is typical struct of product
 type Product struct {
-	id          uint
+	id          int
 	name        string
 	description string
 	price       uint
@@ -20,7 +20,7 @@ type Product struct {
 }
 
 // NewProduct creates product checking the name and description
-func NewProduct(name, description, photo string, price, id uint) (*Product, error) {
+func NewProduct(name, description, photo string, price uint, id int) (*Product, error) {
 	matched, _ := regexp.MatchString(`^([a-zа-я0-9 _.])+$`, name)
 
 	if !matched {

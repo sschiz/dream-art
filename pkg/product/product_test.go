@@ -11,7 +11,7 @@ func TestNewProduct(t *testing.T) {
 		description string
 		photo       string
 		price       uint
-		id          uint
+		id          int
 	}
 	tests := []struct {
 		name    string
