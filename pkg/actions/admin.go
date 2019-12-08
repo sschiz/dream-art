@@ -9,11 +9,11 @@ type AdminAppendAction struct {
 	adminName         string
 }
 
-func (a *AdminAppendAction) SetDone() {
+func (a AdminAppendAction) SetDone() {
 	a.isDone = true
 }
 
-func (a *AdminAppendAction) Execute() error {
+func (a AdminAppendAction) Execute() error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -40,7 +40,7 @@ func (a AdminAppendAction) IsChunksCollected() bool {
 	return a.isChunksCollected
 }
 
-func (a *AdminAppendAction) AddChunk(chunk interface{}, isLastChunk bool) error {
+func (a AdminAppendAction) AddChunk(chunk interface{}, isLastChunk bool) error {
 	a.adminName = chunk.(string)
 	a.isChunksCollected = true
 
