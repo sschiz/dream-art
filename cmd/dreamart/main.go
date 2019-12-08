@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/sschiz/dream-art/pkg/actions"
 	"github.com/sschiz/dream-art/pkg/shop"
 )
 
@@ -30,6 +31,7 @@ func main() {
 
 	shop := new(shop.Shop)
 	err = shop.Syncer.Sync(shop)
+	actionPool := make(map[int64]actions.Action)
 
 	// TODO: add signal handler which sync the shop with database when the program finishes
 
@@ -38,11 +40,11 @@ func main() {
 	}
 
 	for update := range updates {
-		go handleUpdate(update, bot, shop)
+		go handleUpdate(update, bot, shop, actionPool)
 	}
 }
 
-func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop) {
+func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop, actionPool map[int64]actions.Action) {
 	if update.CallbackQuery != nil {
 		chatID := update.CallbackQuery.Message.Chat.ID
 		messageID := update.CallbackQuery.Message.MessageID
@@ -50,10 +52,16 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 
 		if strings.HasPrefix(data, "append-") {
 			if strings.HasSuffix(data, "admin") {
-				msg := tgbotapi.NewEditMessageText(chatID, messageID, "Введите ник нового администратора. Например, @kek123")
-				_, _ = bot.Send(msg)
+				action, err := actions.NewAction("append", "admin", store)
+
+				if err != nil {
+					log.Panic(err)
+				}
+
+				_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID, action.Next()))
 				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Добавление админа"))
-				// TODO: create action pool
+
+				actionPool[chatID] = action
 			}
 		} else {
 			switch data {
@@ -76,8 +84,10 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 	}
 
 	if update.Message != nil {
+		chatID := update.Message.Chat.ID
+
 		if update.Message.IsCommand() {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			msg := tgbotapi.NewMessage(chatID, "")
 			switch update.Message.Command() {
 			case "admin":
 				msg.Text = "Панель администратора"
@@ -86,6 +96,26 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				msg.Text = "В разработке"
 			default:
 				msg.Text = "Я не знаю этой команды"
+			}
+
+			_, _ = bot.Send(msg)
+		} else if action, ok := actionPool[chatID]; ok {
+			msg := tgbotapi.NewMessage(chatID, "")
+
+			err := action.AddChunk(update.Message.Text)
+
+			if err != nil {
+				log.Printf("An error has occurred: %s", err)
+				_, _ = bot.Send(tgbotapi.NewMessage(chatID, "An error has occurred: "+err.Error()))
+			}
+
+			if action.IsDone() {
+				delete(actionPool, chatID)
+
+				msg.Text = "Панель администратора"
+				msg.ReplyMarkup = shop.AdminKeyboard
+			} else {
+				msg.Text = action.Next()
 			}
 
 			_, _ = bot.Send(msg)
