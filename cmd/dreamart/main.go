@@ -1,15 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/sschiz/dream-art/pkg/shop"
 )
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI("903164907:AAHUkV3DDzaprOo3HcNIcpwTAfKnYksOtIk")
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
 		log.Panic(err)
 	}
@@ -43,26 +44,35 @@ func main() {
 
 func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop) {
 	if update.CallbackQuery != nil {
-		fmt.Print(update)
 		chatID := update.CallbackQuery.Message.Chat.ID
 		messageID := update.CallbackQuery.Message.MessageID
+		data := update.CallbackQuery.Data
 
-		switch update.CallbackQuery.Data {
-		case "admin":
-			msg := tgbotapi.NewEditMessageText(chatID, messageID, "Управление падминами")
-			msg.ReplyMarkup = &shop.AdminManagmentKeyboard
-			_, _ = bot.Send(msg)
-		case "product":
-			msg := tgbotapi.NewEditMessageText(chatID, messageID, "Управление продуктами")
-			msg.ReplyMarkup = &shop.ProductManagmentKeyboard
-			_, _ = bot.Send(msg)
-		case "category":
-			msg := tgbotapi.NewEditMessageText(chatID, messageID, "Управление категориями")
-			msg.ReplyMarkup = &shop.CategoryManagmentKeyboard
-			_, _ = bot.Send(msg)
-		case "order":
+		if strings.HasPrefix(data, "append-") {
+			if strings.HasSuffix(data, "admin") {
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "Введите ник нового администратора. Например, @kek123")
+				_, _ = bot.Send(msg)
+				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Добавление админа"))
+				// TODO: create action pool
+			}
+		} else {
+			switch data {
+			case "admin":
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "Управление админами")
+				msg.ReplyMarkup = &shop.AdminManagmentKeyboard
+				_, _ = bot.Send(msg)
+			case "product":
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "Управление продуктами")
+				msg.ReplyMarkup = &shop.ProductManagmentKeyboard
+				_, _ = bot.Send(msg)
+			case "category":
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "Управление категориями")
+				msg.ReplyMarkup = &shop.CategoryManagmentKeyboard
+				_, _ = bot.Send(msg)
+			case "order":
+			}
+			_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Открыто"))
 		}
-		_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Открыто"))
 	}
 
 	if update.Message != nil {
