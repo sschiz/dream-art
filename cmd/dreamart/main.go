@@ -58,7 +58,10 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 					log.Panic(err)
 				}
 
-				_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID, action.Next()))
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
+				msg.Text, msg.ReplyMarkup = action.Next()
+
+				_, _ = bot.Send(msg)
 				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Добавление админа"))
 
 				actionPool[chatID] = action
@@ -115,7 +118,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				msg.Text = "Панель администратора"
 				msg.ReplyMarkup = shop.AdminKeyboard
 			} else {
-				msg.Text = action.Next()
+				msg.Text, msg.ReplyMarkup = action.Next()
 			}
 
 			_, _ = bot.Send(msg)

@@ -1,6 +1,9 @@
 package actions
 
-import "github.com/sschiz/dream-art/pkg/shop"
+import (
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/sschiz/dream-art/pkg/shop"
+)
 
 type AdminAppendAction struct {
 	isDone            bool
@@ -47,6 +50,6 @@ func (a *AdminAppendAction) AddChunk(chunk interface{}) error {
 	return a.Execute()
 }
 
-func (a AdminAppendAction) Next() string {
-	return "Введите ник нового администратора. Например, @kek123"
+func (a AdminAppendAction) Next() (string, *tgbotapi.InlineKeyboardMarkup) {
+	return "Введите ник нового администратора. Например, @kek123", nil
 }
