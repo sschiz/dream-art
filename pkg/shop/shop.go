@@ -26,6 +26,8 @@ func (s *Shop) AppendAdmin(name string) error {
 		return ErrWrongNickname
 	}
 
+	name = name[1:] // delete '@'
+
 	i := sort.SearchStrings(s.admins, name)
 
 	if i < len(s.admins) && s.admins[i] == name {
