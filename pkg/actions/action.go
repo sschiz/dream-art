@@ -13,7 +13,7 @@ type Action interface {
 	SetDone()                                       // set action that is done, but if all chunks is collected
 	AddChunk(chunk interface{}) error               // add chunk that is needed
 	IsChunksCollected() bool                        // returns all chunks collected
-	Next() (string, *tgbotapi.InlineKeyboardMarkup) // return text for next chunk
+	Next() (string, *tgbotapi.InlineKeyboardMarkup) // return text and keyboard for next chunk
 }
 
 var (
