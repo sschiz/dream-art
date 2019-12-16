@@ -50,52 +50,20 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 		messageID := update.CallbackQuery.Message.MessageID
 		data := update.CallbackQuery.Data
 
-		if strings.HasPrefix(data, "append-") {
-			if strings.HasSuffix(data, "admin") {
-				action, err := actions.NewAction("append", "admin", store)
+		if actionStrings := strings.Split(data, "-"); len(actionStrings) == 2 {
+			action, err := actions.NewAction(actionStrings[0], actionStrings[1], store)
 
-				if err != nil {
-					log.Panic(err)
-				}
-
-				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
-				msg.Text, msg.ReplyMarkup = action.Next()
-
-				_, _ = bot.Send(msg)
-				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Добавление админа"))
-
-				actionPool[chatID] = action
-			} else if strings.HasSuffix(data, "category") {
-				action, err := actions.NewAction("append", "category", store)
-
-				if err != nil {
-					log.Panic(err)
-				}
-
-				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
-				msg.Text, msg.ReplyMarkup = action.Next()
-
-				_, _ = bot.Send(msg)
-				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Добавление категории"))
-
-				actionPool[chatID] = action
+			if err != nil {
+				log.Panic(err)
 			}
-		} else if strings.HasPrefix(data, "delete-") {
-			if strings.HasSuffix(data, "admin") {
-				action, err := actions.NewAction("delete", "admin", store)
 
-				if err != nil {
-					log.Panic(err)
-				}
+			msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
+			msg.Text, msg.ReplyMarkup = action.Next()
 
-				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
-				msg.Text, msg.ReplyMarkup = action.Next()
+			_, _ = bot.Send(msg)
+			_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, actionStrings[0]+" "+actionStrings[1]))
 
-				_, _ = bot.Send(msg)
-				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Удаление админа"))
-
-				actionPool[chatID] = action
-			}
+			actionPool[chatID] = action
 		} else {
 			switch data {
 			case "admin":
