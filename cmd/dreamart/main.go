@@ -66,6 +66,22 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 
 				actionPool[chatID] = action
 			}
+		} else if strings.HasPrefix(data, "delete-") {
+			if strings.HasSuffix(data, "admin") {
+				action, err := actions.NewAction("delete", "admin", store)
+
+				if err != nil {
+					log.Panic(err)
+				}
+
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
+				msg.Text, msg.ReplyMarkup = action.Next()
+
+				_, _ = bot.Send(msg)
+				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Удаление админа"))
+
+				actionPool[chatID] = action
+			}
 		} else {
 			switch data {
 			case "admin":
