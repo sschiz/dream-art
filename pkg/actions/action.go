@@ -27,15 +27,19 @@ var (
 func NewAction(actionType, object string, shop *shop.Shop) (Action, error) {
 	switch actionType {
 	case "append":
-		if object == "admin" {
+		switch object {
+		case "admin":
 			return &AdminAppendAction{shop: shop}, nil
-		} else {
+		case "category":
+			return &CategoryAppendAction{shop: shop}, nil
+		default:
 			return nil, ErrObjectDoesNotExist
 		}
 	case "delete":
-		if object == "admin" {
+		switch object {
+		case "admin":
 			return &AdminDeleteAction{shop: shop}, nil
-		} else {
+		default:
 			return nil, ErrObjectDoesNotExist
 		}
 	case "change":

@@ -9,7 +9,7 @@ import (
 )
 
 type Shop struct {
-	categories []category.Category
+	categories []*category.Category
 	admins     []string
 	Syncer     *Syncer
 }
@@ -21,7 +21,7 @@ var (
 )
 
 // AppendAdmin appends new admin into slice by admin's nickname.
-// Admins's nickname should start with '@'
+// Admin's nickname should start with '@'
 func (s *Shop) AppendAdmin(name string) error {
 	if !strings.HasPrefix(name, "@") {
 		return ErrWrongNickname
@@ -41,6 +41,7 @@ func (s *Shop) AppendAdmin(name string) error {
 }
 
 // DeleteAdmin removes admin nickname from list of admins
+// Admin's nickname should start with '@'
 func (s *Shop) DeleteAdmin(name string) error {
 	if !strings.HasPrefix(name, "@") {
 		return ErrWrongNickname
@@ -57,4 +58,9 @@ func (s *Shop) DeleteAdmin(name string) error {
 	s.admins = append(s.admins[:i], s.admins[i+1:]...)
 
 	return nil
+}
+
+// AppendCategory creates new category and appends into category slice
+func (s *Shop) AppendCategory(name string) {
+	s.categories = append(s.categories, category.NewCategory(name))
 }

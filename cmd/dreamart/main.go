@@ -65,6 +65,18 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Добавление админа"))
 
 				actionPool[chatID] = action
+			} else if strings.HasSuffix(data, "category") {
+				action, err := actions.NewAction("append", "category", store)
+
+				if err != nil {
+					log.Panic(err)
+				}
+
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
+				msg.Text, msg.ReplyMarkup = action.Next()
+
+				_, _ = bot.Send(msg)
+				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Добавление категории"))
 			}
 		} else if strings.HasPrefix(data, "delete-") {
 			if strings.HasSuffix(data, "admin") {
