@@ -53,3 +53,52 @@ func (a *AdminAppendAction) AddChunk(chunk interface{}) error {
 func (a AdminAppendAction) Next() (string, *tgbotapi.InlineKeyboardMarkup) {
 	return "Введите ник нового администратора. Например, @kek123", nil
 }
+
+type AdminDeleteAction struct {
+	isDone            bool
+	isChunksCollected bool
+	shop              *shop.Shop
+	adminName         string
+}
+
+func (a *AdminDeleteAction) SetDone() {
+	a.isDone = true
+}
+
+func (a *AdminDeleteAction) Execute() error {
+	if !a.isChunksCollected {
+		return ErrChunksIsNotCollected
+	}
+
+	if a.isDone {
+		return ErrActionIsAlreadyDone
+	}
+
+	err := a.shop.DeleteAdmin(a.adminName)
+	if err != nil {
+		return err
+	}
+
+	a.isDone = true
+
+	return nil
+}
+
+func (a AdminDeleteAction) IsDone() bool {
+	return a.isDone
+}
+
+func (a AdminDeleteAction) IsChunksCollected() bool {
+	return a.isChunksCollected
+}
+
+func (a *AdminDeleteAction) AddChunk(chunk interface{}) error {
+	a.adminName = chunk.(string)
+	a.isChunksCollected = true
+
+	return a.Execute()
+}
+
+func (a AdminDeleteAction) Next() (string, *tgbotapi.InlineKeyboardMarkup) {
+	return "Введите ник удаляемого администратора. Например, @kek123", nil
+}

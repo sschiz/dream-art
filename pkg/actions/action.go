@@ -33,7 +33,11 @@ func NewAction(actionType, object string, shop *shop.Shop) (Action, error) {
 			return nil, ErrObjectDoesNotExist
 		}
 	case "delete":
-		//
+		if object == "admin" {
+			return &AdminDeleteAction{shop: shop}, nil
+		} else {
+			return nil, ErrObjectDoesNotExist
+		}
 	case "change":
 		//
 	default:
