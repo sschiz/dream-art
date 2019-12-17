@@ -74,3 +74,16 @@ func (s Shop) Categories() []*category.Category {
 func (s *Shop) DeleteCategory(i int) {
 	s.categories = append(s.categories[:i], s.categories[i+1:]...)
 }
+
+// IsAdmin checks if user is admin by nickname
+func (s Shop) IsAdmin(nickname string) (bool, error) {
+	if !strings.HasPrefix(nickname, "@") {
+		return false, ErrWrongNickname
+	}
+
+	nickname = nickname[1:]
+
+	i := sort.SearchStrings(s.admins, nickname)
+
+	return i < len(s.admins) && s.admins[i] == nickname, nil
+}

@@ -131,8 +131,10 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 			msg := tgbotapi.NewMessage(chatID, "")
 			switch update.Message.Command() {
 			case "admin":
-				msg.Text = "Панель администратора"
-				msg.ReplyMarkup = shop.AdminKeyboard
+				if isAdmin, _ := store.IsAdmin(update.Message.From.UserName); isAdmin {
+					msg.Text = "Панель администратора"
+					msg.ReplyMarkup = shop.AdminKeyboard
+				}
 			case "buy", "start":
 				msg.Text = "В разработке"
 			default:
