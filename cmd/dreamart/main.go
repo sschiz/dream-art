@@ -51,19 +51,42 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 		data := update.CallbackQuery.Data
 
 		if actionStrings := strings.Split(data, "-"); len(actionStrings) == 2 {
-			action, err := actions.NewAction(actionStrings[0], actionStrings[1], store)
+			if actionStrings[0] == "delete" || actionStrings[0] == "append" || actionStrings[0] == "change" {
+				action, err := actions.NewAction(actionStrings[0], actionStrings[1], store)
 
-			if err != nil {
-				log.Panic(err)
+				if err != nil {
+					log.Panic(err)
+				}
+
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
+				msg.Text, msg.ReplyMarkup = action.Next()
+
+				_, _ = bot.Send(msg)
+				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, actionStrings[0]+" "+actionStrings[1]))
+
+				actionPool[chatID] = action
+			} else if action, ok := actionPool[chatID]; ok {
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
+
+				err := action.AddChunk(data)
+
+				if err != nil {
+					log.Printf("An error has occurred: %s", err)
+					_, _ = bot.Send(tgbotapi.NewMessage(chatID, "An error has occurred: "+err.Error()))
+				}
+
+				if action.IsDone() {
+					delete(actionPool, chatID)
+
+					msg.Text = "Панель администратора"
+					msg.ReplyMarkup = &shop.AdminKeyboard
+				} else {
+					msg.Text, msg.ReplyMarkup = action.Next()
+				}
+
+				_, _ = bot.Send(msg)
+				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "выбрано"))
 			}
-
-			msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
-			msg.Text, msg.ReplyMarkup = action.Next()
-
-			_, _ = bot.Send(msg)
-			_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, actionStrings[0]+" "+actionStrings[1]))
-
-			actionPool[chatID] = action
 		} else {
 			switch data {
 			case "admin":
