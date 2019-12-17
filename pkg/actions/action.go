@@ -39,6 +39,8 @@ func NewAction(actionType, object string, shop *shop.Shop) (Action, error) {
 		switch object {
 		case "admin":
 			return &AdminDeleteAction{shop: shop}, nil
+		case "category":
+			return &CategoryDeleteAction{shop: shop}, nil
 		default:
 			return nil, ErrObjectDoesNotExist
 		}
