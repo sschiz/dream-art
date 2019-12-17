@@ -1,0 +1,104 @@
+package actions
+
+import (
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/sschiz/dream-art/pkg/shop"
+)
+
+type AdminAppendAction struct {
+	isDone            bool
+	isChunksCollected bool
+	shop              *shop.Shop
+	adminName         string
+}
+
+func (a *AdminAppendAction) SetDone() {
+	a.isDone = true
+}
+
+func (a *AdminAppendAction) Execute() error {
+	if !a.isChunksCollected {
+		return ErrChunksIsNotCollected
+	}
+
+	if a.isDone {
+		return ErrActionIsAlreadyDone
+	}
+
+	err := a.shop.AppendAdmin(a.adminName)
+	if err != nil {
+		return err
+	}
+
+	a.isDone = true
+
+	return nil
+}
+
+func (a AdminAppendAction) IsDone() bool {
+	return a.isDone
+}
+
+func (a AdminAppendAction) IsChunksCollected() bool {
+	return a.isChunksCollected
+}
+
+func (a *AdminAppendAction) AddChunk(chunk interface{}) error {
+	a.adminName = chunk.(tgbotapi.Update).Message.Text
+	a.isChunksCollected = true
+
+	return a.Execute()
+}
+
+func (a AdminAppendAction) Next() (string, interface{}) {
+	return "Введите ник нового администратора. Например, @kek123", &shop.CancelRow
+}
+
+type AdminDeleteAction struct {
+	isDone            bool
+	isChunksCollected bool
+	shop              *shop.Shop
+	adminName         string
+}
+
+func (a *AdminDeleteAction) SetDone() {
+	a.isDone = true
+}
+
+func (a *AdminDeleteAction) Execute() error {
+	if !a.isChunksCollected {
+		return ErrChunksIsNotCollected
+	}
+
+	if a.isDone {
+		return ErrActionIsAlreadyDone
+	}
+
+	err := a.shop.DeleteAdmin(a.adminName)
+	if err != nil {
+		return err
+	}
+
+	a.isDone = true
+
+	return nil
+}
+
+func (a AdminDeleteAction) IsDone() bool {
+	return a.isDone
+}
+
+func (a AdminDeleteAction) IsChunksCollected() bool {
+	return a.isChunksCollected
+}
+
+func (a *AdminDeleteAction) AddChunk(chunk interface{}) error {
+	a.adminName = chunk.(tgbotapi.Update).Message.Text
+	a.isChunksCollected = true
+
+	return a.Execute()
+}
+
+func (a AdminDeleteAction) Next() (string, interface{}) {
+	return "Введите ник удаляемого администратора. Например, @kek123", &shop.CancelRow
+}
