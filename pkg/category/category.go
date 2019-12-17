@@ -36,3 +36,13 @@ func (c *Category) AppendProduct(name, description, photo string, price uint) (e
 
 	return nil
 }
+
+// Products returns product list
+func (c Category) Products() []*product.Product {
+	return c.products
+}
+
+// DeleteProduct removes product from list by i
+func (c *Category) DeleteProduct(i int) {
+	c.products = append(c.products[:i], c.products[i+1:]...)
+}
