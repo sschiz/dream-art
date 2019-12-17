@@ -64,3 +64,13 @@ func (s *Shop) DeleteAdmin(name string) error {
 func (s *Shop) AppendCategory(name string) {
 	s.categories = append(s.categories, category.NewCategory(name))
 }
+
+// Categories return all of category list
+func (s Shop) Categories() []*category.Category {
+	return s.categories
+}
+
+// DeleteCategory removes category from list
+func (s *Shop) DeleteCategory(i int) {
+	s.categories = append(s.categories[:i], s.categories[i+1:]...)
+}
