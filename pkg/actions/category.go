@@ -50,7 +50,7 @@ func (a *CategoryAppendAction) AddChunk(chunk interface{}) error {
 }
 
 func (a CategoryAppendAction) Next() (string, interface{}) {
-	return "Введите имя новой категории. Например, цвет", nil
+	return "Введите имя новой категории. Например, цвет", &shop.CancelRow
 }
 
 type CategoryDeleteAction struct {
@@ -117,6 +117,8 @@ func (a CategoryDeleteAction) Next() (string, interface{}) {
 			),
 		)
 	}
+
+	rows = append(rows, shop.CancelRow.InlineKeyboard[0])
 
 	return "Выберите категорию", &tgbotapi.InlineKeyboardMarkup{InlineKeyboard: rows}
 }

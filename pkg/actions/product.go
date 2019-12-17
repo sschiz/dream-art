@@ -105,15 +105,17 @@ func (a ProductAppendAction) Next() (string, interface{}) {
 			)
 		}
 
+		rows = append(rows, shop.CancelRow.InlineKeyboard[0])
+
 		return "Выберите категорию, в которую хотите добавить новый продукт", &tgbotapi.InlineKeyboardMarkup{InlineKeyboard: rows}
 	case 1:
-		return "Отправьте имя нового продукта. Строго с маленькой буквы. Например, бумага", nil
+		return "Отправьте имя нового продукта. Строго с маленькой буквы. Например, бумага", &shop.CancelRow
 	case 2:
-		return "Отправьте описание продукта", nil
+		return "Отправьте описание продукта", shop.CancelRow
 	case 3:
-		return "Отправьте цену продукта до копеек целым числом. Например, 1000 - это 100 рублей или 9005 - это 900 рублей и 5 копеек", nil
+		return "Отправьте цену продукта до копеек целым числом. Например, 1000 - это 100 рублей или 9005 - это 900 рублей и 5 копеек", &shop.CancelRow
 	case 4:
-		return "Отправьте фотографию продукта", nil
+		return "Отправьте фотографию продукта", &shop.CancelRow
 	default:
 		return "", nil
 	}
@@ -202,6 +204,8 @@ func (a ProductDeleteAction) Next() (string, interface{}) {
 			)
 		}
 
+		rows = append(rows, shop.CancelRow.InlineKeyboard[0])
+
 		return "Выберите категорию, из которой хотите добавить новый продукт", &tgbotapi.InlineKeyboardMarkup{InlineKeyboard: rows}
 	case 1:
 		if len(a.category.Products()) == 0 {
@@ -218,6 +222,8 @@ func (a ProductDeleteAction) Next() (string, interface{}) {
 				),
 			)
 		}
+
+		rows = append(rows, shop.CancelRow.InlineKeyboard[0])
 
 		return "Выберите удаляемый продукт", &tgbotapi.InlineKeyboardMarkup{InlineKeyboard: rows}
 	default:

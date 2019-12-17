@@ -48,3 +48,9 @@ var ProductManagmentKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("Изменить", "change-product"),
 	),
 )
+
+var CancelRow = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel"),
+	),
+)

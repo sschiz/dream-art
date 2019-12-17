@@ -51,7 +51,7 @@ func (a *AdminAppendAction) AddChunk(chunk interface{}) error {
 }
 
 func (a AdminAppendAction) Next() (string, interface{}) {
-	return "Введите ник нового администратора. Например, @kek123", nil
+	return "Введите ник нового администратора. Например, @kek123", &shop.CancelRow
 }
 
 type AdminDeleteAction struct {
@@ -100,5 +100,5 @@ func (a *AdminDeleteAction) AddChunk(chunk interface{}) error {
 }
 
 func (a AdminDeleteAction) Next() (string, interface{}) {
-	return "Введите ник удаляемого администратора. Например, @kek123", nil
+	return "Введите ник удаляемого администратора. Например, @kek123", &shop.CancelRow
 }

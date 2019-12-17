@@ -112,6 +112,13 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				msg.ReplyMarkup = &shop.CategoryManagmentKeyboard
 				_, _ = bot.Send(msg)
 			case "order":
+			case "cancel":
+				actionPool[chatID].SetDone()
+				delete(actionPool, chatID)
+
+				msg := tgbotapi.NewEditMessageText(chatID, messageID, "Панель администратора")
+				msg.ReplyMarkup = &shop.AdminKeyboard
+				_, _ = bot.Send(msg)
 			}
 			_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Открыто"))
 		}
