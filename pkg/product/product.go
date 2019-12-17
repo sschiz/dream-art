@@ -16,10 +16,10 @@ var ErrWrongId = errors.New("id is wrong")
 // Product is typical struct of product
 type Product struct {
 	id          int
-	name        string
-	description string
-	price       uint
-	photo       string
+	Name        string
+	Description string
+	Price       uint
+	Photo       string
 }
 
 // NewProduct creates product checking the name and description
@@ -40,7 +40,7 @@ func NewProduct(name, description, photo string, price uint, id int) (*Product, 
 		return nil, ErrWrongId
 	}
 
-	return &Product{name: name, description: description, price: price, photo: photo, id: id}, nil
+	return &Product{Name: name, Description: description, Price: price, Photo: photo, id: id}, nil
 }
 
 // Id return internal id
