@@ -59,7 +59,12 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				}
 
 				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
-				msg.Text, msg.ReplyMarkup = action.Next()
+				var markup interface{}
+				msg.Text, markup = action.Next()
+
+				if markup != nil {
+					msg.ReplyMarkup = markup.(*tgbotapi.InlineKeyboardMarkup)
+				}
 
 				_, _ = bot.Send(msg)
 				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, actionStrings[0]+" "+actionStrings[1]))
@@ -81,7 +86,12 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 					msg.Text = "Панель администратора"
 					msg.ReplyMarkup = &shop.AdminKeyboard
 				} else {
-					msg.Text, msg.ReplyMarkup = action.Next()
+					var markup interface{}
+					msg.Text, markup = action.Next()
+
+					if markup != nil {
+						msg.ReplyMarkup = markup.(*tgbotapi.InlineKeyboardMarkup)
+					}
 				}
 
 				_, _ = bot.Send(msg)
@@ -126,7 +136,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 		} else if action, ok := actionPool[chatID]; ok {
 			msg := tgbotapi.NewMessage(chatID, "")
 
-			err := action.AddChunk(update.Message.Text)
+			err := action.AddChunk(update)
 
 			if err != nil {
 				log.Printf("An error has occurred: %s", err)

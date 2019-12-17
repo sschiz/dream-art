@@ -43,13 +43,13 @@ func (a CategoryAppendAction) IsChunksCollected() bool {
 }
 
 func (a *CategoryAppendAction) AddChunk(chunk interface{}) error {
-	a.categoryName = chunk.(string)
+	a.categoryName = chunk.(tgbotapi.Update).Message.Text
 	a.isChunksCollected = true
 
 	return a.Execute()
 }
 
-func (a CategoryAppendAction) Next() (string, *tgbotapi.InlineKeyboardMarkup) {
+func (a CategoryAppendAction) Next() (string, interface{}) {
 	return "Введите имя новой категории. Например, цвет", nil
 }
 
@@ -65,6 +65,14 @@ func (a *CategoryDeleteAction) SetDone() {
 }
 
 func (a *CategoryDeleteAction) Execute() error {
+	if !a.isChunksCollected {
+		return ErrChunksIsNotCollected
+	}
+
+	if a.isDone {
+		return ErrActionIsAlreadyDone
+	}
+
 	a.shop.DeleteCategory(a.categoryId)
 
 	a.isDone = true
@@ -94,7 +102,7 @@ func (a *CategoryDeleteAction) AddChunk(chunk interface{}) (err error) {
 	return a.Execute()
 }
 
-func (a CategoryDeleteAction) Next() (string, *tgbotapi.InlineKeyboardMarkup) {
+func (a CategoryDeleteAction) Next() (string, interface{}) {
 	if len(a.shop.Categories()) == 0 {
 		a.isDone = true
 		return "Категории отсутствуют", &shop.AdminKeyboard

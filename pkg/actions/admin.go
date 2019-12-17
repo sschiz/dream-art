@@ -44,13 +44,13 @@ func (a AdminAppendAction) IsChunksCollected() bool {
 }
 
 func (a *AdminAppendAction) AddChunk(chunk interface{}) error {
-	a.adminName = chunk.(string)
+	a.adminName = chunk.(tgbotapi.Update).Message.Text
 	a.isChunksCollected = true
 
 	return a.Execute()
 }
 
-func (a AdminAppendAction) Next() (string, *tgbotapi.InlineKeyboardMarkup) {
+func (a AdminAppendAction) Next() (string, interface{}) {
 	return "Введите ник нового администратора. Например, @kek123", nil
 }
 
@@ -93,12 +93,12 @@ func (a AdminDeleteAction) IsChunksCollected() bool {
 }
 
 func (a *AdminDeleteAction) AddChunk(chunk interface{}) error {
-	a.adminName = chunk.(string)
+	a.adminName = chunk.(tgbotapi.Update).Message.Text
 	a.isChunksCollected = true
 
 	return a.Execute()
 }
 
-func (a AdminDeleteAction) Next() (string, *tgbotapi.InlineKeyboardMarkup) {
+func (a AdminDeleteAction) Next() (string, interface{}) {
 	return "Введите ник удаляемого администратора. Например, @kek123", nil
 }
