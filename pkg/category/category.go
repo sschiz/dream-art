@@ -6,13 +6,13 @@ import (
 
 // Category is struct which provides typical shop category
 type Category struct {
-	name     string             // name of category
+	Name     string             // name of category
 	products []*product.Product // list of products that is part of category
 }
 
 // NewCategory creates category
 func NewCategory(name string) *Category {
-	return &Category{name: name, products: nil}
+	return &Category{Name: name, products: nil}
 }
 
 // AppendProduct appends product into internal slice
