@@ -10,7 +10,7 @@ import (
 type Shop struct {
 	categories []*category.Category
 	Admins     map[string]int64
-	Syncer     *Syncer
+	syncer     *Syncer
 }
 
 var (
@@ -77,4 +77,8 @@ func (s *Shop) DeleteCategory(i int) {
 func (s Shop) IsAdmin(name string) bool {
 	_, ok := s.Admins[name]
 	return ok
+}
+
+func (s *Shop) Sync() error {
+	return s.syncer.Sync(s)
 }
