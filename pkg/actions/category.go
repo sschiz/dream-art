@@ -18,7 +18,7 @@ func (a *CategoryAppendAction) SetDone() {
 	a.isDone = true
 }
 
-func (a *CategoryAppendAction) Execute() error {
+func (a *CategoryAppendAction) Execute(args ...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -64,7 +64,7 @@ func (a *CategoryDeleteAction) SetDone() {
 	a.isDone = true
 }
 
-func (a *CategoryDeleteAction) Execute() error {
+func (a *CategoryDeleteAction) Execute(args ...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}

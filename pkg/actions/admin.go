@@ -16,7 +16,7 @@ func (a *AdminAppendAction) SetDone() {
 	a.isDone = true
 }
 
-func (a *AdminAppendAction) Execute() error {
+func (a *AdminAppendAction) Execute(args ...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -65,7 +65,7 @@ func (a *AdminDeleteAction) SetDone() {
 	a.isDone = true
 }
 
-func (a *AdminDeleteAction) Execute() error {
+func (a *AdminDeleteAction) Execute(args ...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
