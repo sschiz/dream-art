@@ -2,7 +2,6 @@ package shop
 
 import (
 	"errors"
-	"sort"
 	"strings"
 
 	"github.com/sschiz/dream-art/pkg/category"
@@ -10,7 +9,7 @@ import (
 
 type Shop struct {
 	categories []*category.Category
-	admins     []string
+	Admins     map[string]int64
 	Syncer     *Syncer
 }
 
@@ -29,12 +28,12 @@ func (s *Shop) AppendAdmin(name string) error {
 
 	name = name[1:] // delete '@'
 
-	i := sort.SearchStrings(s.admins, name)
+	_, ok := s.Admins[name]
 
-	if i < len(s.admins) && s.admins[i] == name {
+	if ok {
 		return ErrAdminAlreadyExists
 	} else {
-		s.admins = append(s.admins[:i], append([]string{name}, s.admins[i:]...)...)
+		s.Admins[name] = 0
 	}
 
 	return nil
@@ -49,13 +48,13 @@ func (s *Shop) DeleteAdmin(name string) error {
 
 	name = name[1:]
 
-	i := sort.SearchStrings(s.admins, name)
+	_, ok := s.Admins[name]
 
-	if !(i < len(s.admins) && s.admins[i] == name) {
+	if !ok {
 		return ErrAdminDoesNotExist
 	}
 
-	s.admins = append(s.admins[:i], s.admins[i+1:]...)
+	delete(s.Admins, name)
 
 	return nil
 }
@@ -73,4 +72,9 @@ func (s Shop) Categories() []*category.Category {
 // DeleteCategory removes category from list
 func (s *Shop) DeleteCategory(i int) {
 	s.categories = append(s.categories[:i], s.categories[i+1:]...)
+}
+
+func (s Shop) IsAdmin(name string) bool {
+	_, ok := s.Admins[name]
+	return ok
 }

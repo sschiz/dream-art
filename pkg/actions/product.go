@@ -23,7 +23,7 @@ func (a *ProductAppendAction) SetDone() {
 	a.isDone = true
 }
 
-func (a *ProductAppendAction) Execute() error {
+func (a *ProductAppendAction) Execute(args ...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -134,7 +134,7 @@ func (a *ProductDeleteAction) SetDone() {
 	a.isDone = true
 }
 
-func (a *ProductDeleteAction) Execute() error {
+func (a *ProductDeleteAction) Execute(args ...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}

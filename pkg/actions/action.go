@@ -9,12 +9,12 @@ import (
 
 // Action is abstract which provides action handling
 type Action interface {
-	Execute() error                   // do what you need
-	IsDone() bool                     // check if action is done
-	SetDone()                         // set action that is done, but if all chunks is collected
-	AddChunk(chunk interface{}) error // add chunk that is needed
-	IsChunksCollected() bool          // returns all chunks collected
-	Next() (string, interface{})      // return text and keyboard for next chunk
+	Execute(args ...interface{}) error // do what you need
+	IsDone() bool                      // check if action is done
+	SetDone()                          // set action that is done, but if all chunks is collected
+	AddChunk(chunk interface{}) error  // add chunk that is needed
+	IsChunksCollected() bool           // returns all chunks collected
+	Next() (string, interface{})       // return text and keyboard for next chunk
 }
 
 var (
@@ -49,6 +49,8 @@ func NewAction(actionType, object string, shop *shop.Shop) (Action, error) {
 		default:
 			return nil, ErrObjectDoesNotExist
 		}
+	case "buy":
+		return &BuyAction{shop: shop}, nil
 	case "change":
 		//
 	default:

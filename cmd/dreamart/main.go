@@ -30,6 +30,7 @@ func main() {
 	}
 
 	shop := new(shop.Shop)
+	shop.Admins = make(map[string]int64)
 	err = shop.Syncer.Sync(shop)
 	actionPool := make(map[int64]actions.Action)
 
@@ -81,21 +82,41 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				}
 
 				if action.IsDone() {
-					delete(actionPool, chatID)
+					if _, ok := action.(*actions.BuyAction); ok {
+						delete(actionPool, chatID)
 
-					msg.Text = "Панель администратора"
-					msg.ReplyMarkup = &shop.AdminKeyboard
+						msg.Text = "Панель администратора"
+						msg.ReplyMarkup = &shop.AdminKeyboard
+					} else {
+						msg.Text = "Спасибо за покупку!"
+					}
 				} else {
-					var markup interface{}
-					msg.Text, markup = action.Next()
+					if actionStrings[0] == "photo" {
+						_, _ = bot.Send(tgbotapi.NewPhotoShare(chatID, action.(*actions.BuyAction).Photo()))
+					} else {
+						var markup interface{}
+						msg.Text, markup = action.Next()
 
-					if markup != nil {
-						msg.ReplyMarkup = markup.(*tgbotapi.InlineKeyboardMarkup)
+						if markup != nil {
+							msg.ReplyMarkup = markup.(*tgbotapi.InlineKeyboardMarkup)
+						}
 					}
 				}
 
 				_, _ = bot.Send(msg)
 				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "выбрано"))
+			}
+		} else if actionStrings[0] == "yes" || actionStrings[0] == "no" {
+			switch actionStrings[0] {
+			case "yes":
+				_ = actionPool[chatID].Execute(update.CallbackQuery.From.UserName, bot)
+				delete(actionPool, chatID)
+				_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID, "С вами свяжется один из свободных администраторов"))
+				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "готово"))
+			case "no":
+				delete(actionPool, chatID)
+				_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID, "Чтобы вернуться в меню покупки напишите /buy"))
+				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "отмена покупки"))
 			}
 		} else {
 			switch data {
@@ -113,33 +134,48 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				_, _ = bot.Send(msg)
 			case "order":
 			case "cancel":
-				actionPool[chatID].SetDone()
-				delete(actionPool, chatID)
+				if _, ok := actionPool[chatID].(*actions.BuyAction); ok {
+					actionPool[chatID].SetDone()
+					delete(actionPool, chatID)
+					msg := tgbotapi.NewEditMessageText(chatID, messageID, "Возвращайтесь! Чтобы открыть меню магазина снова, напишитн /buy")
+					_, _ = bot.Send(msg)
+				} else {
+					actionPool[chatID].SetDone()
+					delete(actionPool, chatID)
 
-				msg := tgbotapi.NewEditMessageText(chatID, messageID, "Панель администратора")
-				msg.ReplyMarkup = &shop.AdminKeyboard
-				_, _ = bot.Send(msg)
+					msg := tgbotapi.NewEditMessageText(chatID, messageID, "Панель администратора")
+					msg.ReplyMarkup = &shop.AdminKeyboard
+					_, _ = bot.Send(msg)
+					_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Действие отменено"))
+					return
+				}
 			}
-			_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Действие отменено"))
+			_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Открыто"))
 		}
 	}
 
 	if update.Message != nil {
 		chatID := update.Message.Chat.ID
 
+		if _, ok := store.Admins[update.Message.From.UserName]; ok && store.Admins[update.Message.From.UserName] == 0 {
+			store.Admins[update.Message.From.UserName] = chatID
+		}
+
 		if update.Message.IsCommand() {
 			msg := tgbotapi.NewMessage(chatID, "")
+
 			switch update.Message.Command() {
 			case "admin":
 				msg.Text = "Панель администратора"
 				msg.ReplyMarkup = shop.AdminKeyboard
 			case "buy", "start":
-				msg.Text = "В разработке"
+				actionPool[chatID], _ = actions.NewAction("buy", "product", store)
+				msg.Text, msg.ReplyMarkup = actionPool[chatID].Next()
 			default:
 				msg.Text = "Я не знаю этой команды"
 			}
-
 			_, _ = bot.Send(msg)
+
 		} else if action, ok := actionPool[chatID]; ok {
 			msg := tgbotapi.NewMessage(chatID, "")
 
@@ -151,10 +187,14 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 			}
 
 			if action.IsDone() {
-				delete(actionPool, chatID)
+				if _, ok := action.(*actions.BuyAction); ok {
+					msg.Text = "Спасибо за покупку!"
+				} else {
+					delete(actionPool, chatID)
 
-				msg.Text = "Панель администратора"
-				msg.ReplyMarkup = shop.AdminKeyboard
+					msg.Text = "Панель администратора"
+					msg.ReplyMarkup = shop.AdminKeyboard
+				}
 			} else {
 				msg.Text, msg.ReplyMarkup = action.Next()
 			}
