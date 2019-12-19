@@ -7,6 +7,6 @@ type Syncer struct {
 }
 
 // Sync synchronizes the shop with the database
-func (s *Syncer) Sync(*Shop) error {
+func (s *Syncer) Sync(shop *Shop) error {
 	return nil
 }

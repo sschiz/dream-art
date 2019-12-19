@@ -1,22 +1,22 @@
-package actions
+package action
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/sschiz/dream-art/pkg/shop"
 )
 
-type AdminAppendAction struct {
+type AdminAppend struct {
 	isDone            bool
 	isChunksCollected bool
 	shop              *shop.Shop
 	adminName         string
 }
 
-func (a *AdminAppendAction) SetDone() {
+func (a *AdminAppend) SetDone() {
 	a.isDone = true
 }
 
-func (a *AdminAppendAction) Execute(args ...interface{}) error {
+func (a *AdminAppend) Execute(...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -35,37 +35,37 @@ func (a *AdminAppendAction) Execute(args ...interface{}) error {
 	return nil
 }
 
-func (a AdminAppendAction) IsDone() bool {
+func (a AdminAppend) IsDone() bool {
 	return a.isDone
 }
 
-func (a AdminAppendAction) IsChunksCollected() bool {
+func (a AdminAppend) IsChunksCollected() bool {
 	return a.isChunksCollected
 }
 
-func (a *AdminAppendAction) AddChunk(chunk interface{}) error {
+func (a *AdminAppend) AddChunk(chunk interface{}) error {
 	a.adminName = chunk.(tgbotapi.Update).Message.Text
 	a.isChunksCollected = true
 
 	return a.Execute()
 }
 
-func (a AdminAppendAction) Next() (string, interface{}) {
+func (a AdminAppend) Next() (string, interface{}) {
 	return "Введите ник нового администратора. Например, @kek123", &shop.CancelRow
 }
 
-type AdminDeleteAction struct {
+type AdminDelete struct {
 	isDone            bool
 	isChunksCollected bool
 	shop              *shop.Shop
 	adminName         string
 }
 
-func (a *AdminDeleteAction) SetDone() {
+func (a *AdminDelete) SetDone() {
 	a.isDone = true
 }
 
-func (a *AdminDeleteAction) Execute(args ...interface{}) error {
+func (a *AdminDelete) Execute(...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -84,21 +84,21 @@ func (a *AdminDeleteAction) Execute(args ...interface{}) error {
 	return nil
 }
 
-func (a AdminDeleteAction) IsDone() bool {
+func (a AdminDelete) IsDone() bool {
 	return a.isDone
 }
 
-func (a AdminDeleteAction) IsChunksCollected() bool {
+func (a AdminDelete) IsChunksCollected() bool {
 	return a.isChunksCollected
 }
 
-func (a *AdminDeleteAction) AddChunk(chunk interface{}) error {
+func (a *AdminDelete) AddChunk(chunk interface{}) error {
 	a.adminName = chunk.(tgbotapi.Update).Message.Text
 	a.isChunksCollected = true
 
 	return a.Execute()
 }
 
-func (a AdminDeleteAction) Next() (string, interface{}) {
+func (a AdminDelete) Next() (string, interface{}) {
 	return "Введите ник удаляемого администратора. Например, @kek123", &shop.CancelRow
 }

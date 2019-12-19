@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/sschiz/dream-art/pkg/actions"
+	"github.com/sschiz/dream-art/pkg/action"
 	"github.com/sschiz/dream-art/pkg/shop"
 )
 
@@ -30,27 +30,23 @@ func main() {
 		log.Panic(err)
 	}
 
-	shop, err := shop.NewShop(new(shop.Syncer))
+	newShop, err := shop.New(new(shop.Syncer))
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	actionPool := make(map[int64]actions.Action)
+	actionPool := make(map[int64]action.Action)
 	mu := new(sync.RWMutex)
 
-	// TODO: add signal handler which sync the shop with database when the program finishes
-
-	if err != nil {
-		log.Panic(err)
-	}
+	// TODO: add signal handler which sync the newShop with database when the program finishes
 
 	for update := range updates {
-		go handleUpdate(update, bot, shop, actionPool, mu)
+		go handleUpdate(update, bot, newShop, actionPool, mu)
 	}
 }
 
-func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop, actionPool map[int64]actions.Action, mu *sync.RWMutex) {
+func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop, actionPool map[int64]action.Action, mu *sync.RWMutex) {
 	if update.CallbackQuery != nil {
 		chatID := update.CallbackQuery.Message.Chat.ID
 		messageID := update.CallbackQuery.Message.MessageID
@@ -58,7 +54,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 
 		if actionStrings := strings.Split(data, "-"); len(actionStrings) == 2 {
 			if actionStrings[0] == "delete" || actionStrings[0] == "append" || actionStrings[0] == "change" {
-				action, err := actions.NewAction(actionStrings[0], actionStrings[1], store)
+				act, err := action.New(actionStrings[0], actionStrings[1], store)
 
 				if err != nil {
 					log.Panic(err)
@@ -66,7 +62,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 
 				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
 				var markup interface{}
-				msg.Text, markup = action.Next()
+				msg.Text, markup = act.Next()
 
 				if markup != nil {
 					msg.ReplyMarkup = markup.(*tgbotapi.InlineKeyboardMarkup)
@@ -76,20 +72,20 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, actionStrings[0]+" "+actionStrings[1]))
 
 				mu.Lock()
-				actionPool[chatID] = action
+				actionPool[chatID] = act
 				mu.Unlock()
-			} else if action, ok := actionPool[chatID]; ok {
+			} else if act, ok := actionPool[chatID]; ok {
 				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
 
-				err := action.AddChunk(data)
+				err := act.AddChunk(data)
 
 				if err != nil {
 					log.Printf("An error has occurred: %s", err)
 					_, _ = bot.Send(tgbotapi.NewMessage(chatID, "An error has occurred: "+err.Error()))
 				}
 
-				if action.IsDone() {
-					if _, ok := action.(*actions.BuyAction); ok {
+				if act.IsDone() {
+					if _, ok := act.(*action.Buy); ok {
 						mu.Lock()
 						delete(actionPool, chatID)
 						mu.Unlock()
@@ -101,10 +97,10 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 					}
 				} else {
 					if actionStrings[0] == "photo" {
-						_, _ = bot.Send(tgbotapi.NewPhotoShare(chatID, action.(*actions.BuyAction).Photo()))
+						_, _ = bot.Send(tgbotapi.NewPhotoShare(chatID, act.(*action.Buy).Photo()))
 					} else {
 						var markup interface{}
-						msg.Text, markup = action.Next()
+						msg.Text, markup = act.Next()
 
 						if markup != nil {
 							msg.ReplyMarkup = markup.(*tgbotapi.InlineKeyboardMarkup)
@@ -152,7 +148,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				_, _ = bot.Send(msg)
 			case "order":
 			case "cancel":
-				if _, ok := actionPool[chatID].(*actions.BuyAction); ok {
+				if _, ok := actionPool[chatID].(*action.Buy); ok {
 					mu.RLock()
 					actionPool[chatID].SetDone()
 					mu.RUnlock()
@@ -199,7 +195,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				msg.ReplyMarkup = shop.AdminKeyboard
 			case "buy", "start":
 				mu.Lock()
-				actionPool[chatID], _ = actions.NewAction("buy", "product", store)
+				actionPool[chatID], _ = action.New("buy", "product", store)
 				mu.Unlock()
 
 				msg.Text, msg.ReplyMarkup = actionPool[chatID].Next()
@@ -208,18 +204,18 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 			}
 			_, _ = bot.Send(msg)
 
-		} else if action, ok := actionPool[chatID]; ok {
+		} else if act, ok := actionPool[chatID]; ok {
 			msg := tgbotapi.NewMessage(chatID, "")
 
-			err := action.AddChunk(update)
+			err := act.AddChunk(update)
 
 			if err != nil {
 				log.Printf("An error has occurred: %s", err)
 				_, _ = bot.Send(tgbotapi.NewMessage(chatID, "An error has occurred: "+err.Error()))
 			}
 
-			if action.IsDone() {
-				if _, ok := action.(*actions.BuyAction); ok {
+			if act.IsDone() {
+				if _, ok := act.(*action.Buy); ok {
 					msg.Text = "Спасибо за покупку!"
 				} else {
 					mu.Lock()
@@ -230,7 +226,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 					msg.ReplyMarkup = shop.AdminKeyboard
 				}
 			} else {
-				msg.Text, msg.ReplyMarkup = action.Next()
+				msg.Text, msg.ReplyMarkup = act.Next()
 			}
 
 			_, _ = bot.Send(msg)

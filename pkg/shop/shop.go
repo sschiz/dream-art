@@ -21,8 +21,8 @@ var (
 	ErrAdminDoesNotExist  = errors.New("admin does not exist")
 )
 
-// NewShop creates shop
-func NewShop(syncer *Syncer) (*Shop, error) {
+// New creates shop
+func New(syncer *Syncer) (*Shop, error) {
 	shop := new(Shop)
 	shop.Admins = make(map[string]int64)
 	shop.Mu = new(sync.RWMutex)
