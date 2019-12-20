@@ -47,6 +47,16 @@ func main() {
 		log.Panic(err)
 	}
 
+	defer func() {
+		if r := recover(); r != nil {
+			err := newShop.Sync()
+			if err != nil {
+				log.Printf("Err while syncing: %s", err)
+			}
+			log.Println("Panicking", r)
+		}
+	}()
+
 	actionPool := make(map[int64]action.Action)
 	mu := new(sync.RWMutex)
 
@@ -235,7 +245,16 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 
 			if err != nil {
 				log.Printf("An error has occurred: %s", err)
+				mu.Lock()
+				delete(actionPool, chatID)
+				mu.Unlock()
+
+				msg := tgbotapi.NewMessage(chatID, "")
+				msg.Text = "Панель администратора"
+				msg.ReplyMarkup = shop.AdminKeyboard
+
 				_, _ = bot.Send(tgbotapi.NewMessage(chatID, "An error has occurred: "+err.Error()))
+				_, _ = bot.Send(msg)
 			}
 
 			if act.IsDone() {
