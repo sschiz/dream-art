@@ -25,7 +25,7 @@ func (c *Category) AppendProduct(name, description, photo string, price uint) (e
 			return err
 		}
 	} else {
-		item, err = product.NewProduct(name, description, photo, price, c.products[len(c.products)-1].Id()+1)
+		item, err = product.NewProduct(name, description, photo, price, c.products[len(c.products)-1].ID+1)
 
 		if err != nil {
 			return err
