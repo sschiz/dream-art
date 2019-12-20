@@ -81,6 +81,7 @@ func (a *Buy) AddChunk(chunk interface{}) error {
 			a.cart = append(a.cart, a.shop.Categories()[a.currentCategory].Products()[i])
 
 			a.currentCategory++
+			a.currentProduct = 0
 			if a.currentCategory > len(a.shop.Categories())-1 {
 				a.isChunksCollected = true
 				return nil
