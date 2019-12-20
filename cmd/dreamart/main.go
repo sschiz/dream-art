@@ -109,7 +109,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				}
 
 				if act.IsDone() {
-					if _, ok := act.(*action.Buy); ok {
+					if _, ok := act.(*action.Buy); !ok {
 						mu.Lock()
 						delete(actionPool, chatID)
 						mu.Unlock()
