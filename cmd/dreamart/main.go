@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
 	"strings"
 	"sync"
 
@@ -30,7 +31,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	newShop, err := shop.New(new(shop.Syncer))
+	newShop, err := shop.New(&shop.Syncer{ConnectionString: "user=sschiz password=60egozaz dbname=shop"})
 
 	if err != nil {
 		log.Panic(err)
@@ -39,7 +40,20 @@ func main() {
 	actionPool := make(map[int64]action.Action)
 	mu := new(sync.RWMutex)
 
-	// TODO: add signal handler which sync the newShop with database when the program finishes
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for sig := range c {
+			// sig is a ^C, handle it
+			log.Printf("Called signal: %s", sig)
+			err := newShop.Sync()
+			if err != nil {
+				log.Printf("error while syncing: %s", err)
+				os.Exit(1)
+			}
+			os.Exit(0)
+		}
+	}()
 
 	for update := range updates {
 		go handleUpdate(update, bot, newShop, actionPool, mu)
@@ -191,8 +205,10 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 
 			switch update.Message.Command() {
 			case "admin":
-				msg.Text = "Панель администратора"
-				msg.ReplyMarkup = shop.AdminKeyboard
+				if _, ok := store.Admins[update.Message.From.UserName]; ok {
+					msg.Text = "Панель администратора"
+					msg.ReplyMarkup = shop.AdminKeyboard
+				}
 			case "buy", "start":
 				mu.Lock()
 				actionPool[chatID], _ = action.New("buy", "product", store)
