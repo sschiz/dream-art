@@ -245,6 +245,9 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 
 			if err != nil {
 				log.Printf("An error has occurred: %s", err)
+
+				act.SetDone()
+
 				mu.Lock()
 				delete(actionPool, chatID)
 				mu.Unlock()
