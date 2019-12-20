@@ -3,6 +3,11 @@
  * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
+/*
+ * (c) 2019, Matyushkin Alexander <sav3nme@gmail.com>
+ * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
 package main
 
 import (
@@ -167,31 +172,29 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				_, _ = bot.Send(msg)
 			case "order":
 			case "cancel":
-				if _, ok := actionPool[chatID].(*action.Buy); ok {
-					mu.RLock()
-					actionPool[chatID].SetDone()
-					mu.RUnlock()
+				if act, ok := actionPool[chatID]; ok {
+					if _, ok := act.(*action.Buy); ok {
+						act.SetDone()
 
-					mu.Lock()
-					delete(actionPool, chatID)
-					mu.Unlock()
+						mu.Lock()
+						delete(actionPool, chatID)
+						mu.Unlock()
 
-					msg := tgbotapi.NewEditMessageText(chatID, messageID, "Возвращайтесь! Чтобы открыть меню магазина снова, напишитн /buy")
-					_, _ = bot.Send(msg)
-				} else {
-					mu.RLock()
-					actionPool[chatID].SetDone()
-					mu.RUnlock()
+						msg := tgbotapi.NewEditMessageText(chatID, messageID, "Возвращайтесь! Чтобы открыть меню магазина снова, напишите /buy")
+						_, _ = bot.Send(msg)
+					} else {
+						act.SetDone()
 
-					mu.Lock()
-					delete(actionPool, chatID)
-					mu.Unlock()
+						mu.Lock()
+						delete(actionPool, chatID)
+						mu.Unlock()
 
-					msg := tgbotapi.NewEditMessageText(chatID, messageID, "Панель администратора")
-					msg.ReplyMarkup = &shop.AdminKeyboard
-					_, _ = bot.Send(msg)
-					_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Действие отменено"))
-					return
+						msg := tgbotapi.NewEditMessageText(chatID, messageID, "Панель администратора")
+						msg.ReplyMarkup = &shop.AdminKeyboard
+						_, _ = bot.Send(msg)
+						_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Действие отменено"))
+						return
+					}
 				}
 			}
 			_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Открыто"))
