@@ -1,4 +1,9 @@
-package actions
+/*
+ * (c) 2019, Matyushkin Alexander <sav3nme@gmail.com>
+ * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
+package action
 
 import (
 	"strconv"
@@ -10,7 +15,7 @@ import (
 	"github.com/sschiz/dream-art/pkg/shop"
 )
 
-type ProductAppendAction struct {
+type ProductAppend struct {
 	categoryId        int
 	product           *product.Product
 	shop              *shop.Shop
@@ -19,11 +24,11 @@ type ProductAppendAction struct {
 	step              int
 }
 
-func (a *ProductAppendAction) SetDone() {
+func (a *ProductAppend) SetDone() {
 	a.isDone = true
 }
 
-func (a *ProductAppendAction) Execute(args ...interface{}) error {
+func (a *ProductAppend) Execute(...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -43,15 +48,15 @@ func (a *ProductAppendAction) Execute(args ...interface{}) error {
 	return nil
 }
 
-func (a ProductAppendAction) IsDone() bool {
+func (a ProductAppend) IsDone() bool {
 	return a.isDone
 }
 
-func (a ProductAppendAction) IsChunksCollected() bool {
+func (a ProductAppend) IsChunksCollected() bool {
 	return a.isChunksCollected
 }
 
-func (a *ProductAppendAction) AddChunk(chunk interface{}) (err error) {
+func (a *ProductAppend) AddChunk(chunk interface{}) (err error) {
 	switch a.step {
 	case 0:
 		data := chunk.(string)
@@ -87,7 +92,7 @@ func (a *ProductAppendAction) AddChunk(chunk interface{}) (err error) {
 	return nil
 }
 
-func (a ProductAppendAction) Next() (string, interface{}) {
+func (a ProductAppend) Next() (string, interface{}) {
 	switch a.step {
 	case 0:
 		if len(a.shop.Categories()) == 0 {
@@ -97,10 +102,10 @@ func (a ProductAppendAction) Next() (string, interface{}) {
 
 		var rows [][]tgbotapi.InlineKeyboardButton
 
-		for i, category := range a.shop.Categories() {
+		for i, c := range a.shop.Categories() {
 			rows = append(
 				rows, tgbotapi.NewInlineKeyboardRow(
-					tgbotapi.NewInlineKeyboardButtonData(category.Name, category.Name+"-"+strconv.Itoa(i)),
+					tgbotapi.NewInlineKeyboardButtonData(c.Name, c.Name+"-"+strconv.Itoa(i)),
 				),
 			)
 		}
@@ -121,7 +126,7 @@ func (a ProductAppendAction) Next() (string, interface{}) {
 	}
 }
 
-type ProductDeleteAction struct {
+type ProductDelete struct {
 	shop              *shop.Shop
 	category          *category.Category
 	productID         int
@@ -130,11 +135,11 @@ type ProductDeleteAction struct {
 	step              int
 }
 
-func (a *ProductDeleteAction) SetDone() {
+func (a *ProductDelete) SetDone() {
 	a.isDone = true
 }
 
-func (a *ProductDeleteAction) Execute(args ...interface{}) error {
+func (a *ProductDelete) Execute(...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -150,15 +155,15 @@ func (a *ProductDeleteAction) Execute(args ...interface{}) error {
 	return nil
 }
 
-func (a ProductDeleteAction) IsDone() bool {
+func (a ProductDelete) IsDone() bool {
 	return a.isDone
 }
 
-func (a ProductDeleteAction) IsChunksCollected() bool {
+func (a ProductDelete) IsChunksCollected() bool {
 	return a.isChunksCollected
 }
 
-func (a *ProductDeleteAction) AddChunk(chunk interface{}) (err error) {
+func (a *ProductDelete) AddChunk(chunk interface{}) (err error) {
 	data := chunk.(string)
 
 	switch a.step {
@@ -186,7 +191,7 @@ func (a *ProductDeleteAction) AddChunk(chunk interface{}) (err error) {
 	return nil
 }
 
-func (a ProductDeleteAction) Next() (string, interface{}) {
+func (a ProductDelete) Next() (string, interface{}) {
 	switch a.step {
 	case 0:
 		if len(a.shop.Categories()) == 0 {
@@ -196,10 +201,10 @@ func (a ProductDeleteAction) Next() (string, interface{}) {
 
 		var rows [][]tgbotapi.InlineKeyboardButton
 
-		for i, category := range a.shop.Categories() {
+		for i, c := range a.shop.Categories() {
 			rows = append(
 				rows, tgbotapi.NewInlineKeyboardRow(
-					tgbotapi.NewInlineKeyboardButtonData(category.Name, category.Name+"-"+strconv.Itoa(i)),
+					tgbotapi.NewInlineKeyboardButtonData(c.Name, c.Name+"-"+strconv.Itoa(i)),
 				),
 			)
 		}
@@ -215,10 +220,10 @@ func (a ProductDeleteAction) Next() (string, interface{}) {
 
 		var rows [][]tgbotapi.InlineKeyboardButton
 
-		for i, product := range a.category.Products() {
+		for i, p := range a.category.Products() {
 			rows = append(
 				rows, tgbotapi.NewInlineKeyboardRow(
-					tgbotapi.NewInlineKeyboardButtonData(product.Name, product.Name+"-"+strconv.Itoa(i)),
+					tgbotapi.NewInlineKeyboardButtonData(p.Name, p.Name+"-"+strconv.Itoa(i)),
 				),
 			)
 		}

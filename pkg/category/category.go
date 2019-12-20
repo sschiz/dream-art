@@ -1,3 +1,8 @@
+/*
+ * (c) 2019, Matyushkin Alexander <sav3nme@gmail.com>
+ * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
 package category
 
 import (
@@ -25,7 +30,7 @@ func (c *Category) AppendProduct(name, description, photo string, price uint) (e
 			return err
 		}
 	} else {
-		item, err = product.NewProduct(name, description, photo, price, c.products[len(c.products)-1].Id()+1)
+		item, err = product.NewProduct(name, description, photo, price, c.products[len(c.products)-1].ID+1)
 
 		if err != nil {
 			return err

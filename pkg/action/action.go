@@ -1,4 +1,9 @@
-package actions
+/*
+ * (c) 2019, Matyushkin Alexander <sav3nme@gmail.com>
+ * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
+package action
 
 import (
 	"errors"
@@ -24,33 +29,33 @@ var (
 	ErrObjectDoesNotExist     = errors.New("such an object doesn't exist")
 )
 
-// NewAction creates new action
-func NewAction(actionType, object string, shop *shop.Shop) (Action, error) {
+// New creates new action
+func New(actionType, object string, shop *shop.Shop) (Action, error) {
 	switch actionType {
 	case "append":
 		switch object {
 		case "admin":
-			return &AdminAppendAction{shop: shop}, nil
+			return &AdminAppend{shop: shop}, nil
 		case "category":
-			return &CategoryAppendAction{shop: shop}, nil
+			return &CategoryAppend{shop: shop}, nil
 		case "product":
-			return &ProductAppendAction{shop: shop, product: &product.Product{}}, nil
+			return &ProductAppend{shop: shop, product: &product.Product{}}, nil
 		default:
 			return nil, ErrObjectDoesNotExist
 		}
 	case "delete":
 		switch object {
 		case "admin":
-			return &AdminDeleteAction{shop: shop}, nil
+			return &AdminDelete{shop: shop}, nil
 		case "category":
-			return &CategoryDeleteAction{shop: shop}, nil
+			return &CategoryDelete{shop: shop}, nil
 		case "product":
-			return &ProductDeleteAction{shop: shop}, nil
+			return &ProductDelete{shop: shop}, nil
 		default:
 			return nil, ErrObjectDoesNotExist
 		}
 	case "buy":
-		return &BuyAction{shop: shop}, nil
+		return &Buy{shop: shop}, nil
 	case "change":
 		//
 	default:

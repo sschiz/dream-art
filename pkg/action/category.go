@@ -1,4 +1,9 @@
-package actions
+/*
+ * (c) 2019, Matyushkin Alexander <sav3nme@gmail.com>
+ * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
+package action
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -7,18 +12,18 @@ import (
 	"strings"
 )
 
-type CategoryAppendAction struct {
+type CategoryAppend struct {
 	isDone            bool
 	isChunksCollected bool
 	shop              *shop.Shop
 	categoryName      string
 }
 
-func (a *CategoryAppendAction) SetDone() {
+func (a *CategoryAppend) SetDone() {
 	a.isDone = true
 }
 
-func (a *CategoryAppendAction) Execute(args ...interface{}) error {
+func (a *CategoryAppend) Execute(...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -34,37 +39,37 @@ func (a *CategoryAppendAction) Execute(args ...interface{}) error {
 	return nil
 }
 
-func (a CategoryAppendAction) IsDone() bool {
+func (a CategoryAppend) IsDone() bool {
 	return a.isDone
 }
 
-func (a CategoryAppendAction) IsChunksCollected() bool {
+func (a CategoryAppend) IsChunksCollected() bool {
 	return a.isChunksCollected
 }
 
-func (a *CategoryAppendAction) AddChunk(chunk interface{}) error {
+func (a *CategoryAppend) AddChunk(chunk interface{}) error {
 	a.categoryName = chunk.(tgbotapi.Update).Message.Text
 	a.isChunksCollected = true
 
 	return a.Execute()
 }
 
-func (a CategoryAppendAction) Next() (string, interface{}) {
+func (a CategoryAppend) Next() (string, interface{}) {
 	return "Введите имя новой категории. Например, цвет", &shop.CancelRow
 }
 
-type CategoryDeleteAction struct {
+type CategoryDelete struct {
 	isDone            bool
 	isChunksCollected bool
 	shop              *shop.Shop
 	categoryId        int
 }
 
-func (a *CategoryDeleteAction) SetDone() {
+func (a *CategoryDelete) SetDone() {
 	a.isDone = true
 }
 
-func (a *CategoryDeleteAction) Execute(args ...interface{}) error {
+func (a *CategoryDelete) Execute(...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -80,15 +85,15 @@ func (a *CategoryDeleteAction) Execute(args ...interface{}) error {
 	return nil
 }
 
-func (a CategoryDeleteAction) IsDone() bool {
+func (a CategoryDelete) IsDone() bool {
 	return a.isDone
 }
 
-func (a CategoryDeleteAction) IsChunksCollected() bool {
+func (a CategoryDelete) IsChunksCollected() bool {
 	return a.isChunksCollected
 }
 
-func (a *CategoryDeleteAction) AddChunk(chunk interface{}) (err error) {
+func (a *CategoryDelete) AddChunk(chunk interface{}) (err error) {
 	data := chunk.(string)
 
 	a.categoryId, err = strconv.Atoi(strings.Split(data, "-")[1])
@@ -102,7 +107,7 @@ func (a *CategoryDeleteAction) AddChunk(chunk interface{}) (err error) {
 	return a.Execute()
 }
 
-func (a CategoryDeleteAction) Next() (string, interface{}) {
+func (a CategoryDelete) Next() (string, interface{}) {
 	if len(a.shop.Categories()) == 0 {
 		a.isDone = true
 		return "Категории отсутствуют", &shop.AdminKeyboard

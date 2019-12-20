@@ -1,4 +1,9 @@
-package actions
+/*
+ * (c) 2019, Matyushkin Alexander <sav3nme@gmail.com>
+ * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
+package action
 
 import (
 	"fmt"
@@ -10,7 +15,7 @@ import (
 	"github.com/sschiz/dream-art/pkg/shop"
 )
 
-type BuyAction struct {
+type Buy struct {
 	isDone            bool
 	isChunksCollected bool
 	shop              *shop.Shop
@@ -21,11 +26,11 @@ type BuyAction struct {
 	userName          string
 }
 
-func (a *BuyAction) SetDone() {
+func (a *Buy) SetDone() {
 	a.isDone = true
 }
 
-func (a *BuyAction) Execute(args ...interface{}) error {
+func (a *Buy) Execute(args ...interface{}) error {
 	if !a.isChunksCollected {
 		return ErrChunksIsNotCollected
 	}
@@ -49,15 +54,15 @@ func (a *BuyAction) Execute(args ...interface{}) error {
 	return nil
 }
 
-func (a BuyAction) IsDone() bool {
+func (a Buy) IsDone() bool {
 	return a.isDone
 }
 
-func (a BuyAction) IsChunksCollected() bool {
+func (a Buy) IsChunksCollected() bool {
 	return a.isChunksCollected
 }
 
-func (a *BuyAction) AddChunk(chunk interface{}) error {
+func (a *Buy) AddChunk(chunk interface{}) error {
 	if data, ok := chunk.(string); ok {
 		if strings.HasPrefix(data, "next-") {
 			a.currentProduct++
@@ -81,6 +86,7 @@ func (a *BuyAction) AddChunk(chunk interface{}) error {
 			a.cart = append(a.cart, a.shop.Categories()[a.currentCategory].Products()[i])
 
 			a.currentCategory++
+			a.currentProduct = 0
 			if a.currentCategory > len(a.shop.Categories())-1 {
 				a.isChunksCollected = true
 				return nil
@@ -93,12 +99,12 @@ func (a *BuyAction) AddChunk(chunk interface{}) error {
 	return nil
 }
 
-func (a *BuyAction) Next() (text string, out interface{}) {
+func (a *Buy) Next() (text string, out interface{}) {
 	if a.IsChunksCollected() {
 		text = "Вы уверены в своем выборе? \n\n"
 		text += "Корзина:\n"
-		for _, product := range a.cart {
-			order := strings.Title(product.Name) + " - " + fmt.Sprintf("%.2f", float32(product.Price)/10) + " руб\n"
+		for _, p := range a.cart {
+			order := strings.Title(p.Name) + " - " + fmt.Sprintf("%.2f", float32(p.Price)/10) + " руб\n"
 			text += order
 			a.orderText += order
 		}
@@ -114,11 +120,11 @@ func (a *BuyAction) Next() (text string, out interface{}) {
 			return "Магазин пуст", nil
 		}
 
-		product := a.shop.Categories()[a.currentCategory].Products()[a.currentProduct]
+		p := a.shop.Categories()[a.currentCategory].Products()[a.currentProduct]
 
-		text += strings.Title(product.Name) + "\n\n"
-		text += product.Description + "\n\n"
-		text += "Цена: " + fmt.Sprintf("%.2f", float32(product.Price)/10) + " руб"
+		text += strings.Title(p.Name) + "\n\n"
+		text += p.Description + "\n\n"
+		text += "Цена: " + fmt.Sprintf("%.2f", float32(p.Price)/10) + " руб"
 
 		keyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -137,6 +143,6 @@ func (a *BuyAction) Next() (text string, out interface{}) {
 }
 
 // Photo returns PhotoID
-func (a BuyAction) Photo() string {
+func (a Buy) Photo() string {
 	return a.shop.Categories()[a.currentCategory].Products()[a.currentProduct].Photo
 }
