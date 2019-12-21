@@ -227,12 +227,15 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 					msg.Text = "Панель администратора"
 					msg.ReplyMarkup = shop.AdminKeyboard
 				}
-			case "buy", "start":
+			case "buy":
 				mu.Lock()
 				actionPool[chatID], _ = action.New("buy", "product", store)
 				mu.Unlock()
 
 				msg.Text, msg.ReplyMarkup = actionPool[chatID].Next()
+			case "start":
+				msg.Text = "Напишите /buy, а после выберите понравившийся стиль и размер будущего портрета. " +
+					"По всем вопросам к @yakovlevpave1"
 			default:
 				msg.Text = "Я не знаю этой команды"
 			}
