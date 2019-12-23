@@ -155,8 +155,13 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				mu.Lock()
 				delete(actionPool, chatID)
 				mu.Unlock()
-
-				_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID, "С вами свяжется один из свободных администраторов"))
+				if update.CallbackQuery.From.UserName == "" {
+					_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID,
+						"У Вас отсутствует username, поэтому мы не можем с Вами связаться."+
+							" Напишите, пожалуйста, администратору - @yakovlevpave1"))
+				} else {
+					_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID, "С вами свяжется один из свободных администраторов"))
+				}
 				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "готово"))
 			case "no":
 				mu.Lock()
