@@ -205,8 +205,16 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 
 				msg.Text, msg.ReplyMarkup = actionPool[chatID].Next()
 			case "start":
-				msg.Text = "Напишите /buy, а после выберите понравившийся стиль и размер будущего портрета. " +
-					"По всем вопросам к @yakovlevpave1"
+				msg.Text = "🖼️ Чтобы рассчитать стоимость будущего портрета, нужно всего лишь выбрать его стиль и размер\n\n" +
+					"Напиши /buy , чтобы начать"
+
+				_, _ = bot.Send(tgbotapi.NewMessage(chatID, "Здравствуй, дорогой покупатель 😉 Меня создали для того, чтобы я помогал дарить незабываемые впечатления людям!\n\n"+
+					"Ох, какие же эмоции испытает человек, для которого ты собираешься заказать портрет 👇"))
+
+				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "AAQCAAMvBwADlSlIdReRWaU5OPcBcc0PAAQBAAdtAAOkHgACFgQ"))
+				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "AAQCAAMwBwADlSlIi20fXOHf-QfZos0PAAQBAAdtAANyEAACFgQ"))
+				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "AAQCAAM_BQAC5vAhSIodf0Q7HFe8AyvKDgAEAQAHbQADQgADFgQ"))
+				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "AAQCAAMxBwADlSlINGov1xPgeEdM8skOAAQBAAdtAANNCQACFgQ"))
 			default:
 				msg.Text = "Я не знаю этой команды"
 			}
