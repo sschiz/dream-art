@@ -101,7 +101,6 @@ func (a *Buy) AddChunk(chunk interface{}) error {
 
 func (a *Buy) Next() (text string, out interface{}) {
 	if a.IsChunksCollected() {
-		text = "Вы уверены в своем выборе? \n\n"
 		text += "Корзина:\n"
 		for _, p := range a.cart {
 			order := strings.Title(p.Name) + " - " + fmt.Sprintf("%.2f", float32(p.Price)/10) + " руб\n"
@@ -109,40 +108,29 @@ func (a *Buy) Next() (text string, out interface{}) {
 			a.orderText += order
 		}
 
-		keyboard := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Да", "yes"),
-			tgbotapi.NewInlineKeyboardButtonData("Нет", "no"),
-		))
+		text += "\n С Вами свяжется администратор!"
 
-		return text, &keyboard
-	} else {
-		if len(a.shop.Categories()) == 0 || len(a.shop.Categories()[a.currentCategory].Products()) == 0 {
-			return "Магазин пуст", nil
-		}
-
-		p := a.shop.Categories()[a.currentCategory].Products()[a.currentProduct]
-
-		text += strings.Title(p.Name) + "\n\n"
-		text += p.Description + "\n\n"
-		text += "Цена: " + fmt.Sprintf("%.2f", float32(p.Price)/10) + " руб"
-
-		keyboard := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("⬅️", "back-back"),
-				tgbotapi.NewInlineKeyboardButtonData("Выбрать", "select-"+strconv.Itoa(a.currentProduct)),
-				tgbotapi.NewInlineKeyboardButtonData("➡️", "next-next"),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Фото товара", "photo-photo"),
-			),
-			shop.CancelRow.InlineKeyboard[0],
-		)
-
-		return text, &keyboard
+		return text, nil
 	}
-}
 
-// Photo returns PhotoID
-func (a Buy) Photo() string {
-	return a.shop.Categories()[a.currentCategory].Products()[a.currentProduct].Photo
+	if len(a.shop.Categories()) == 0 || len(a.shop.Categories()[a.currentCategory].Products()) == 0 {
+		return "Магазин пуст", nil
+	}
+
+	p := a.shop.Categories()[a.currentCategory].Products()[a.currentProduct]
+
+	text += "[" + strings.Title(p.Name) + "]" + "(" + p.Photo + ")" + "\n\n"
+	text += p.Description + "\n\n"
+	text += "Цена: " + fmt.Sprintf("%.2f", float32(p.Price)/10) + " руб"
+
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("⬅️", "back-back"),
+			tgbotapi.NewInlineKeyboardButtonData("Выбрать", "select-"+strconv.Itoa(a.currentProduct)),
+			tgbotapi.NewInlineKeyboardButtonData("➡️", "next-next"),
+		),
+		shop.CancelRow.InlineKeyboard[0],
+	)
+
+	return text, &keyboard
 }

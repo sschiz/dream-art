@@ -82,7 +82,8 @@ func (a *ProductAppend) AddChunk(chunk interface{}) (err error) {
 
 		a.product.Price = uint(price)
 	case 4:
-		a.product.Photo = (*chunk.(tgbotapi.Update).Message.Photo)[0].FileID
+		update := chunk.(tgbotapi.Update)
+		a.product.Photo = update.Message.Text
 		a.isChunksCollected = true
 
 		return a.Execute()
@@ -120,7 +121,7 @@ func (a ProductAppend) Next() (string, interface{}) {
 	case 3:
 		return "Отправьте цену продукта до копеек целым числом. Например, 1000 - это 100 рублей или 9005 - это 900 рублей и 5 копеек", &shop.CancelRow
 	case 4:
-		return "Отправьте фотографию продукта", &shop.CancelRow
+		return "Отправьте прямую ссылку на фотографию продукта", &shop.CancelRow
 	default:
 		return "", nil
 	}

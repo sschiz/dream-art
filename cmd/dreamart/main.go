@@ -3,11 +3,6 @@
  * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-/*
- * (c) 2019, Matyushkin Alexander <sav3nme@gmail.com>
- * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
- */
-
 package main
 
 import (
@@ -110,6 +105,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				mu.Unlock()
 			} else if act, ok := actionPool[chatID]; ok {
 				msg := tgbotapi.NewEditMessageText(chatID, messageID, "")
+				msg.ParseMode = "markdown"
 
 				err := act.AddChunk(data)
 
@@ -130,46 +126,16 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 						msg.Text = "Спасибо за покупку!"
 					}
 				} else {
-					if actionStrings[0] == "photo" {
-						_, _ = bot.Send(tgbotapi.NewPhotoShare(chatID, act.(*action.Buy).Photo()))
-					} else {
-						var markup interface{}
-						msg.Text, markup = act.Next()
+					var markup interface{}
+					msg.Text, markup = act.Next()
 
-						if markup != nil {
-							msg.ReplyMarkup = markup.(*tgbotapi.InlineKeyboardMarkup)
-						}
+					if markup != nil {
+						msg.ReplyMarkup = markup.(*tgbotapi.InlineKeyboardMarkup)
 					}
 				}
 
 				_, _ = bot.Send(msg)
 				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "выбрано"))
-			}
-		} else if actionStrings[0] == "yes" || actionStrings[0] == "no" {
-			switch actionStrings[0] {
-			case "yes":
-				mu.RLock()
-				_ = actionPool[chatID].Execute(update.CallbackQuery.From.UserName, bot)
-				mu.RUnlock()
-
-				mu.Lock()
-				delete(actionPool, chatID)
-				mu.Unlock()
-				if update.CallbackQuery.From.UserName == "" {
-					_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID,
-						"У Вас отсутствует username, поэтому мы не можем с Вами связаться."+
-							" Напишите, пожалуйста, администратору - @yakovlevpave1"))
-				} else {
-					_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID, "С вами свяжется один из свободных администраторов"))
-				}
-				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "готово"))
-			case "no":
-				mu.Lock()
-				delete(actionPool, chatID)
-				mu.Unlock()
-
-				_, _ = bot.Send(tgbotapi.NewEditMessageText(chatID, messageID, "Чтобы вернуться в меню покупки напишите /buy"))
-				_, _ = bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "отмена покупки"))
 			}
 		} else {
 			switch data {
