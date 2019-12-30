@@ -211,10 +211,10 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				_, _ = bot.Send(tgbotapi.NewMessage(chatID, "Здравствуй, дорогой покупатель 😉 Меня создали для того, чтобы я помогал дарить незабываемые впечатления людям!\n\n"+
 					"Ох, какие же эмоции испытает человек, для которого ты собираешься заказать портрет 👇"))
 
-				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "AAQCAAMvBwADlSlIdReRWaU5OPcBcc0PAAQBAAdtAAOkHgACFgQ"))
-				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "AAQCAAMwBwADlSlIi20fXOHf-QfZos0PAAQBAAdtAANyEAACFgQ"))
-				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "AAQCAAM_BQAC5vAhSIodf0Q7HFe8AyvKDgAEAQAHbQADQgADFgQ"))
-				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "AAQCAAMxBwADlSlINGov1xPgeEdM8skOAAQBAAdtAANNCQACFgQ"))
+				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "BAADAgADLwcAA5UpSHUXkVmlOTj3FgQ"))
+				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "BAADAgADMAcAA5UpSIttH1zh3_kHFgQ"))
+				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "BAADAgADPwUAAubwIUiKHX9EOxxXvBYE"))
+				_, _ = bot.Send(tgbotapi.NewVideoShare(chatID, "BAADAgADMQcAA5UpSDRqL9cT4HhHFgQ"))
 			default:
 				msg.Text = "Я не знаю этой команды"
 			}
