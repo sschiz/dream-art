@@ -204,6 +204,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				mu.Unlock()
 
 				msg.Text, msg.ReplyMarkup = actionPool[chatID].Next()
+				msg.ParseMode = "markdown"
 			case "start":
 				msg.Text = "🖼️ Чтобы рассчитать стоимость будущего портрета, нужно всего лишь выбрать его стиль и размер\n\n" +
 					"Напиши /buy , чтобы начать"
