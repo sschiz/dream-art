@@ -123,7 +123,9 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 						msg.Text = "Панель администратора"
 						msg.ReplyMarkup = &shop.AdminKeyboard
 					} else {
-						msg.Text = "Спасибо за покупку!"
+						msg.Text = "Спасибо за покупку! " +
+							"Напишите, пожалуйста, администратору, чтобы условиться о деталях заказа " +
+							"@yakovlevpave1"
 					}
 				} else {
 					var markup interface{}

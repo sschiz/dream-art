@@ -88,6 +88,7 @@ func (a *Buy) AddChunk(chunk interface{}) error {
 			a.currentCategory++
 			a.currentProduct = 0
 			if a.currentCategory > len(a.shop.Categories())-1 {
+				a.isDone = true
 				a.isChunksCollected = true
 				return nil
 			}
@@ -100,19 +101,6 @@ func (a *Buy) AddChunk(chunk interface{}) error {
 }
 
 func (a *Buy) Next() (text string, out interface{}) {
-	if a.IsChunksCollected() {
-		text += "Корзина:\n"
-		for _, p := range a.cart {
-			order := strings.Title(p.Name) + " - " + fmt.Sprintf("%.2f", float32(p.Price)/10) + " руб\n"
-			text += order
-			a.orderText += order
-		}
-
-		text += "\n С Вами свяжется администратор!"
-
-		return text, nil
-	}
-
 	if len(a.shop.Categories()) == 0 || len(a.shop.Categories()[a.currentCategory].Products()) == 0 {
 		return "Магазин пуст", nil
 	}
