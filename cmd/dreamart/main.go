@@ -122,7 +122,7 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 					msg.Text = "Панель администратора"
 					msg.ReplyMarkup = &shop.AdminKeyboard
 				} else if _, ok := act.(*action.Buy); ok && act.IsChunksCollected() {
-					err := act.Execute(update.Message.From.UserName, bot)
+					err := act.Execute(update.CallbackQuery.From.UserName, bot)
 
 					if err != nil {
 						log.Printf("An error has occurred: %s", err)
