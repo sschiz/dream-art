@@ -83,7 +83,9 @@ func (a *Buy) AddChunk(chunk interface{}) error {
 				return err
 			}
 
-			a.cart = append(a.cart, a.shop.Categories()[a.currentCategory].Products()[i])
+			product := a.shop.Categories()[a.currentCategory].Products()[i]
+			a.cart = append(a.cart, product)
+			a.orderText += product.Name + " - " + fmt.Sprintf("%.2f", float32(product.Price)/10) + " руб \n"
 
 			a.currentCategory++
 			a.currentProduct = 0
@@ -109,8 +111,6 @@ func (a *Buy) Next() (text string, out interface{}) {
 	text += "[" + strings.Title(p.Name) + "]" + "(" + p.Photo + ")" + "\n\n"
 	text += p.Description + "\n\n"
 	text += "Цена: " + fmt.Sprintf("%.2f", float32(p.Price)/10) + " руб"
-
-	a.orderText = text
 
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
