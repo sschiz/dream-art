@@ -110,6 +110,8 @@ func (a *Buy) Next() (text string, out interface{}) {
 	text += p.Description + "\n\n"
 	text += "Цена: " + fmt.Sprintf("%.2f", float32(p.Price)/10) + " руб"
 
+	a.orderText = text
+
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("⬅️", "back-back"),
