@@ -115,18 +115,23 @@ func handleUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, store *shop.Shop
 				}
 
 				if act.IsDone() {
-					if _, ok := act.(*action.Buy); !ok {
-						mu.Lock()
-						delete(actionPool, chatID)
-						mu.Unlock()
+					mu.Lock()
+					delete(actionPool, chatID)
+					mu.Unlock()
 
-						msg.Text = "Панель администратора"
-						msg.ReplyMarkup = &shop.AdminKeyboard
-					} else {
-						msg.Text = "Спасибо за покупку! " +
-							"Напишите, пожалуйста, администратору, чтобы условиться о деталях заказа " +
-							"@yakovlevpave1"
+					msg.Text = "Панель администратора"
+					msg.ReplyMarkup = &shop.AdminKeyboard
+				} else if _, ok := act.(*action.Buy); ok && act.IsChunksCollected() {
+					err := act.Execute(update.Message.From.UserName, bot)
+
+					if err != nil {
+						log.Printf("An error has occurred: %s", err)
+						_, _ = bot.Send(tgbotapi.NewMessage(chatID, "An error has occurred: "+err.Error()))
 					}
+
+					msg.Text = "Спасибо за покупку! " +
+						"Напишите, пожалуйста, администратору, чтобы условиться о деталях заказа " +
+						"@yakovlevpave1"
 				} else {
 					var markup interface{}
 					msg.Text, markup = act.Next()
